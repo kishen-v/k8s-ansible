@@ -38,9 +38,13 @@ apiServer:
 controllerManager:
   extraArgs:
     bind-address: "0.0.0.0"
+    kube-api-qps: "100"
+    kube-api-burst: "100"
 scheduler:
   extraArgs:
     bind-address: "0.0.0.0"
+    kube-api-qps: "100"
+    kube-api-burst: "100"
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration

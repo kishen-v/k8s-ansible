@@ -14,3 +14,6 @@
 # Hold-off from executing tests until all nodes in cluster are Ready
 - name: Wait for nodes to transistion to Ready state
   shell: kubectl wait --for=condition=Ready nodes --all --timeout=600s
+
+- name: Apply manifests to install kube-state-metrics
+  shell: kubectl apply -k github.com/kubernetes/kube-state-metrics/examples/standard/

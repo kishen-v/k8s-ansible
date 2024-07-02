@@ -15,12 +15,12 @@ kubeconfig_path: kubeconfig
 
 ##### Runtime Configurations #####
 # cri-tools version
-critools_version: 1.29.0
-runc_version: 1.1.12
+critools_version: 1.30.0
+runc_version: 1.1.13
 # valid runtimes: containerd [default], crio.
 runtime: containerd
-containerd_version: 1.7.13
-crio_version: 1.29.1
+containerd_version: 1.7.18
+crio_version: 1.30.3
 pause_container_image: registry.k8s.io/pause:3.9
 
 cgroup_driver: systemd
@@ -60,7 +60,7 @@ bucket: ppc64le-ci-builds
 # build_version: d39214ade1d60c
 
 ##### Calico Configurations #####
-calico_version: v3.27.0
+calico_version: v3.28.0
 # The available methods of installation for Calico can be either using the tigera operator, or using the manifest.
 # Choose between "operator" or "manifest" (default) for the desired installation method.
 calico_installation_type: manifest
@@ -69,9 +69,9 @@ calico_installation_type: manifest
 prepull_images: []
 
 ##### ETCD version #####
-etcd_version: v3.5.9
+etcd_version: v3.5.14
 
 ##### Bridge CNI Configurations #####
-cni_plugins_version: v1.3.0
+cni_plugins_version: v1.5.1
 cni_plugins_url: https://github.com/containernetworking/plugins/releases/download
 cni_plugins_tarball: "cni-plugins-linux-{{ ansible_architecture }}-{{ cni_plugins_version }}.tgz"

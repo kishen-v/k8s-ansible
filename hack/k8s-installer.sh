@@ -81,7 +81,7 @@ while getopts "ac:p:rw:y" opt; do
     c)
       controllers=("$OPTARG")
       echo "[masters]" >> $hosts_file
-      check_reachability $controllers;;
+      check_reachability "${controllers[@]}";;
     w)
       workers=("$OPTARG")
       echo "[workers]" >> $hosts_file

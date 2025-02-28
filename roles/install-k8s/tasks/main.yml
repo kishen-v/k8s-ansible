@@ -60,51 +60,51 @@
     dest: /root/kubeadm.yaml
     mode: '0644'
 
-- name: kubeadm init
-  command: "kubeadm init --config /root/kubeadm.yaml"
-  when: node_type == "master"
-
-- name: Create a directory ${HOME}/.kube if it does not exist
-  file:
-    path: ${HOME}/.kube/
-    state: directory
-    mode: '0755'
-
-- name: Copy the /etc/kubernetes/admin.conf to ${HOME}/.kube/config
-  copy:
-    src: /etc/kubernetes/admin.conf
-    dest: ${HOME}/.kube/config
-    remote_src: yes
-  when: node_type == "master"
-
-- name: Copy the /etc/kubernetes/admin.conf to local machine(path - {{ kubeconfig_path }})
-  fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: "{{ kubeconfig_path }}"
-    flat: yes
-  when: node_type == "master"
-
-- name: remove taint
-  command: "kubectl taint nodes --all node-role.kubernetes.io/control-plane-; kubectl taint nodes --all node-role.kubernetes.io/master-"
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-  when: node_type == "master" and not ('workers' in groups and groups['workers'])
-
-- name: Get the kubeadm join command from the Kubernetes master.
-  command: kubeadm token create --print-join-command
-  changed_when: false
-  when: node_type == "master"
-  register: kubernetes_join_command_result
-
-- name: Set the kubeadm join command globally.
-  set_fact:
-    kubernetes_join_command: >
-      {{ kubernetes_join_command_result.stdout }}
-  when: kubernetes_join_command_result.stdout is defined
-  delegate_to: "{{ item }}"
-  delegate_facts: true
-  with_items: "{{ groups['all'] }}"
-
-- name: kubeadm join
-  command: "{{ kubernetes_join_command }}"
-  when: node_type == "worker"
+#- name: kubeadm init
+#  command: "kubeadm init --config /root/kubeadm.yaml"
+#  when: node_type == "master"
+#
+#- name: Create a directory ${HOME}/.kube if it does not exist
+#  file:
+#    path: ${HOME}/.kube/
+#    state: directory
+#    mode: '0755'
+#
+#- name: Copy the /etc/kubernetes/admin.conf to ${HOME}/.kube/config
+#  copy:
+#    src: /etc/kubernetes/admin.conf
+#    dest: ${HOME}/.kube/config
+#    remote_src: yes
+#  when: node_type == "master"
+#
+#- name: Copy the /etc/kubernetes/admin.conf to local machine(path - {{ kubeconfig_path }})
+#  fetch:
+#    src: /etc/kubernetes/admin.conf
+#    dest: "{{ kubeconfig_path }}"
+#    flat: yes
+#  when: node_type == "master"
+#
+#- name: remove taint
+#  command: "kubectl taint nodes --all node-role.kubernetes.io/control-plane-; kubectl taint nodes --all node-role.kubernetes.io/master-"
+#  environment:
+#    KUBECONFIG: /etc/kubernetes/admin.conf
+#  when: node_type == "master" and not ('workers' in groups and groups['workers'])
+#
+#- name: Get the kubeadm join command from the Kubernetes master.
+#  command: kubeadm token create --print-join-command
+#  changed_when: false
+#  when: node_type == "master"
+#  register: kubernetes_join_command_result
+#
+#- name: Set the kubeadm join command globally.
+#  set_fact:
+#    kubernetes_join_command: >
+#      {{ kubernetes_join_command_result.stdout }}
+#  when: kubernetes_join_command_result.stdout is defined
+#  delegate_to: "{{ item }}"
+#  delegate_facts: true
+#  with_items: "{{ groups['all'] }}"
+#
+#- name: kubeadm join
+#  command: "{{ kubernetes_join_command }}"
+#  when: node_type == "worker"

@@ -7,16 +7,29 @@
         https://{{ s3_server }}/{{ bucket }}/{{ directory }}/{{ build_version }}
       {%- endif %}
 
-- name: Extract the k8s bits
+- name: Extract the k8s control plane bits
   unarchive:
     src: "{{ src_template }}/{{ item }}"
     dest: "/usr/local/bin/"
     remote_src: yes
     extra_opts:
       - --strip-components=3
-  with_items: "{{ k8s_tar_bundles }}"
+  with_items: "{{ k8s_control_plane_tar_bundles }}"
   retries: 3
   delay: 5
+  when: node_type == "master"
+
+- name: Extract the k8s worker node bits
+  unarchive:
+    src: "{{ src_template }}/{{ item }}"
+    dest: "/usr/local/bin/"
+    remote_src: yes
+    extra_opts:
+      - --strip-components=3
+  with_items: "{{ k8s_worker_tar_bundles }}"
+  retries: 3
+  delay: 5
+  when: node_type == "master"
 
 - name: Import container images
   shell: |
@@ -29,3 +42,4 @@
     - kubectl
     - kube-proxy
     - kube-scheduler
+  when: node_type == "master"

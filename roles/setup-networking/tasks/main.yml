@@ -1,26 +1,11 @@
-# TODO: The private IP can be used here, so that would translate to having a field with the first 3 octects
-# in the group_vars file: like private_ip: 192.168.101
-# likely new variables:
-#     private_network_gateway: "192.168.101.1"
-#     bastion_cidr: 192.168.101.2/24
-##    bastion_IP: 192.168.101.2
-#     use the CIDR for grepping, which comes from terraform
-
 - name: Configure networks on bastion
   shell: |
-    dev_uuid=$(grep $(ip a | grep "192.168" | awk '{ print $NF }') <(nmcli -g device,uuid con) | cut -d':' -f2)
-    # nmcli connection modify 3cd3178f-a764-3cea-a6e0-f453fa9f877d ipv4.addresses 192.168.101.2/24 ipv4.gateway 192.168.101.1
-    nmcli connection modify $dev_uuid ipv4.addresses {{ bastion_cidr }} ipv4.gateway {{ private_network_gateway }}
-    # nmcli connection modify +ipv4.routes "10.0.0.0/8 192.168.101.1"
-    nmcli connection modify $dev_uuid +ipv4.routes "{{ private_cidr }} {{ private_network_gateway }}"
-    # nmcli connection modify 3cd3178f-a764-3cea-a6e0-f453fa9f877d -ipv4.gateway ""
+    dev_uuid=$(grep $(ip a | grep {{ bastion_private_ip }} | awk '{ print $NF }') <(nmcli -g device,uuid con) | cut -d':' -f2)
+    nmcli connection modify $dev_uuid ipv4.addresses {{ bastion_private_cidr }} ipv4.gateway {{ bastion_private_gateway }}
+    nmcli connection modify $dev_uuid +ipv4.routes "{{ private_cidr }} {{ bastion_private_gateway }}"
     nmcli connection modify $dev_uuid -ipv4.gateway ""
     nmcli connection up $dev_uuid
   when: node_type == "bastion"
-
-
-## Persist/re-init ip-forwarder.sh on reboot.
-
 
 - name: Copy the ip-forwarder.sh script
   copy:
@@ -29,22 +14,18 @@
     mode: '0744'
   when: node_type == "bastion"
 
-# TODO: Identify logic to determine public and private ethernet interfaces.
-
 - name: Setup forwarding rules through ip-forwarder.sh on bastion
   shell: |
-    public_interface=$()
-    private_interface=$()
+    public_interface=$(ip a | grep {{ bastion_internal_ip }} | awk '{print $NF}')
+    private_interface=$(ip a | grep {{ bastion_private_ip }} | awk '{print $NF}')
    ./root/ip-forwarder.sh $private_interface $public_interface
   when: node_type == "bastion"
 
 - name: Identify interfaces on the masters and workers associated with private IP
   shell: |
-      dev_uuid=$(grep $(ip a | grep {{ ansible_default_ipv4.address }} | awk '{ print $NF }') <(nmcli -g device,uuid con) | cut -d':' -f2)
-    # nmcli conn modify 5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03 ipv4.gateway "192.168.101.2"
-    nmcli conn modify $dev_uuid ipv4.gateway "192.168.101.2"
-    # nmcli conn modify 5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03 +ipv4.routes "10.0.0.0/8 192.168.101.1"
-    nmcli conn modify $dev_uuid +ipv4.routes "{{ private_cidr }} {{ private_network_gateway }}"
+    dev_uuid=$(grep $(ip a | grep {{ ansible_default_ipv4.address }} | awk '{ print $NF }') <(nmcli -g device,uuid con) | cut -d':' -f2)
+    nmcli conn modify $dev_uuid ipv4.gateway "{{ bastion_internal_ip }}"
+    nmcli conn modify $dev_uuid +ipv4.routes "{{ private_cidr }} {{ bastion_private_gateway }}"
     nmcli conn up $dev_uuid
 
   when: node_type == "master" or node_type == "worker"

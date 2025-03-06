@@ -33,8 +33,7 @@ registry_mirrors:
 
 ##### Private Network configuration #####
 private_cidr: 10.0.0.0/8
-bastion_private_cidr: "192.168.25.0/24"
-bastion_internal_ip: "192.168.169.237"
+
 bastion_private_gateway: "192.168.25.1"
 bastion_private_ip: "192.168.25.162"
 
